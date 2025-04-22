@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 TIMEZONE = 'India/Kolkata'  # Set your timezone here
@@ -26,7 +26,7 @@ def authenticate_google_calendar():
         else:
             logger.info("Starting OAuth flow...")
             flow = InstalledAppFlow.from_client_secrets_file(
-                os.path.join(os.path.dirname(_file_), '..', 'credentials.json'),
+                os.path.join(os.path.dirname(__file__), '..', 'credentials.json'),
                 SCOPES
             )
             creds = flow.run_local_server(port=0)
@@ -125,7 +125,7 @@ def get_upcoming_events(max_results=5):
         logger.error(f"Error retrieving events: {str(e)}")
         raise
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     # Test with a sample event
     test_event = {
         'summary': 'Integration Test',

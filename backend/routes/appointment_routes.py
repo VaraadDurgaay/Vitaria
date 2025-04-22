@@ -6,7 +6,7 @@ from utils.google_calendar import create_calendar_event
 import logging
 
 appointment_router = APIRouter(tags=["Appointments"])
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 class Appointment(BaseModel):
     doctor_name: str
