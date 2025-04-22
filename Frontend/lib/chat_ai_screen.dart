@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'chatwidgets.dart'; 
 import 'custom_bottom_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatAiScreen extends StatefulWidget {
   final PageController pageController;
@@ -18,50 +19,68 @@ class ChatAiScreen extends StatefulWidget {
 
 class _ChatAiScreenState extends State<ChatAiScreen> {
   final TextEditingController _queryController = TextEditingController();
-  final List<Map<String, dynamic>> _messages = [
-    {"role": "user", "type": "text", "content": "I've been feeling dizzy lately. Any suggestions?"},
-    {"role": "assistant", "type": "text", "content": "I see from your records that you have a history of low blood pressure. Have you been staying hydrated and monitoring your salt intake?"},
-    {"role": "user", "type": "text", "content": "I think I have, but the dizziness persists."},
-    {"role": "assistant", "type": "text", "content": "Since you're on medication for hypertension, dizziness could be a side effect. Have you noticed any other symptoms like nausea or weakness?"},
-  ];
+  final List<Map<String, dynamic>> _messages = [];  
   final PageController _pageController = PageController();
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _sendQuery() async {
-    if (_queryController.text.isEmpty) return;
+  if (_queryController.text.isEmpty) return;
 
-    setState(() {
-      _isLoading = true;
-      _messages.add({"role": "user", "type": "text", "content": _queryController.text});
-      _queryController.clear();
-    });
+  // Retrieve the stored token from SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('authToken');  // Get the stored token
 
-    try {
-      final response = await http.post(
-        Uri.parse('https://your-fastapi-endpoint.com/chat'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'query': _messages.last["content"]}),
-      );
+  // if (token == null || token.isEmpty) {
+  //   // If no token found or token is empty, return early
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User not authenticated')));
+  //   return;
+  // }
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        setState(() {
-          _messages.add({"role": "assistant", "type": "text", "content": responseData['response']});
-        });
+  setState(() {
+    _isLoading = true;
+    _messages.add({"role": "user", "type": "text", "content": _queryController.text});
+    _queryController.clear();
+  });
+
+  try {
+    final response = await http.post(
+      Uri.parse('https://vitaria-0xc4.onrender.com/chat'),
+      headers: {
+        'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer $token',  // Include the token in the Authorization header
+      },
+      body: json.encode({
+        'user_id': "token", 
+        'message': _messages.last["content"],  // Updated key to match the endpoint requirement
+          // Send the token as the user ID
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      setState(() {
+        _messages.add({"role": "assistant", "type": "text", "content": responseData['response']});
+      });
+    } else {
+      // Show validation error
+      final errorData = json.decode(response.body);
+      if (errorData['detail'] != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${errorData['detail'][0]['m+sg']}')));
       } else {
         throw Exception('Failed to load response');
       }
-    } catch (error) {
-      setState(() {
-        _messages.add({"role": "assistant", "type": "text", "content": "Error: $error"});
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
+  } catch (error) {
+    setState(() {
+      _messages.add({"role": "assistant", "type": "text", "content": "Error: $error"});
+    });
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -125,7 +144,7 @@ class _ChatAiScreenState extends State<ChatAiScreen> {
               children: [
                 // Simple Plus Button (same style as Send)
                 IconButton(
-                  icon: Icon(Icons.add,size: 40,),
+                  icon: Icon(Icons.add, size: 40),
                   onPressed: _pickImage,
                 ),
                 SizedBox(width: 8.0),

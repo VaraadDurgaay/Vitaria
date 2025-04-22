@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginpageWidget extends StatefulWidget {
   const LoginpageWidget({super.key});
@@ -32,41 +33,48 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
 
   // Function to handle login API call
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final url = Uri.parse('https://vitaria.onrender.com/auth/login');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }),
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (response.statusCode == 200) {
-      // Login successful
-      final responseData = json.decode(response.body);
-      print('Login successful: $responseData');
-      Navigator.pushReplacementNamed(context, '/chat');
-    } else {
-      // Login failed
-      final errorData = json.decode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${errorData['detail']}')),
-      );
-    }
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  final url = Uri.parse('https://vitaria.onrender.com/auth/login');
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({
+      'email': _emailController.text,
+      'password': _passwordController.text,
+    }),
+  );
+
+  setState(() {
+    _isLoading = false;
+  });
+
+  if (response.statusCode == 200) {
+    // Login successful
+    final responseData = json.decode(response.body);
+    print('Login successful: $responseData');
+
+    // Save the token locally
+    final token = responseData['user']['id']; // Assuming the 'id' is your token
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('userToken', token);
+
+    // Navigate to the next page (e.g., chat page)
+    Navigator.pushReplacementNamed(context, '/chat');
+  } else {
+    // Login failed
+    final errorData = json.decode(response.body);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Login failed: ${errorData['detail']}')),
+    );
+  }
+}
 
   // Function to handle Google OAuth
   Future<void> _signInWithGoogle() async {
