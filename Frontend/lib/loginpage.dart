@@ -94,7 +94,6 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
         Navigator.pushReplacementNamed(context, '/chat');
       } else {
         // Google OAuth failed
-
         final errorData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Google OAuth failed: ${errorData['detail']}')),
