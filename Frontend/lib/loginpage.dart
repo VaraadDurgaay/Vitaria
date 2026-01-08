@@ -39,33 +39,35 @@ class _LoginpageWidgetState extends State<LoginpageWidget> {
     setState(() {
       _isLoading = true;
     });
-
-    final url = Uri.parse('https://vitaria.onrender.com/auth/login');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }),
-    );
+// for testing removed api call
+    // final url = Uri.parse('https://vitaria.onrender.com/auth/login');
+    // final response = await http.post(
+    //   url,
+    //   headers: {'Content-Type': 'application/json'},
+    //   body: json.encode({
+    //     'email': _emailController.text,
+    //     'password': _passwordController.text,
+    //   }),
+    // );
 
     setState(() {
       _isLoading = false;
     });
-
-    if (response.statusCode == 200) {
-      // Login successful
-      final responseData = json.decode(response.body);
-      print('Login successful: $responseData');
-      Navigator.pushReplacementNamed(context, '/chat');
-    } else {
-      // Login failed
-      final errorData = json.decode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${errorData['detail']}')),
-      );
-    }
+// bypass for test
+    // if (response.statusCode == 200) {
+    //   // Login successful
+    //   final responseData = json.decode(response.body);
+    //   print('Login successful: $responseData');
+    //   Navigator.pushReplacementNamed(context, '/chat');
+    // }
+    //  else {
+    //   // Login failed
+    //   final errorData = json.decode(response.body);
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Login failed: ${errorData['detail']}')),
+    //   );
+    // }
+    Navigator.pushReplacementNamed(context, '/chat');
   }
 
   // Function to handle Google OAuth
