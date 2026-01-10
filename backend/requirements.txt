@@ -9,7 +9,15 @@ sqlalchemy
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
-
+ultralytics
+paddleocr
+langchain                
+langchain-classic        
+langchain-community      
+langchain-core           
+langchain-openai         
+langchain-text-splitters 
+faiss-cpu
 #MongoDB Cluster for Varaad,Rutuj
 #
 #Steps to Download the JSON File
